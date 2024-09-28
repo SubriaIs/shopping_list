@@ -12,10 +12,10 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3  # Updated to the latest version of checkout
 
       - name: Set up JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3  # Updated to the latest version of setup-java
         with:
           java-version: '18'  # Specify Java 18
           distribution: 'adopt'  # You can also use 'zulu' or 'temurin'
@@ -31,7 +31,7 @@ jobs:
         run: echo "TIMESTAMP=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
       - name: Publish package as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3  # Updated to the latest version
         with:
           name: shopping-list-backend:${{ env.TIMESTAMP }}
           path: target/*.jar  # Adjust if your packaged artifact is not a jar
