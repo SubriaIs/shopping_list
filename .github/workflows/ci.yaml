@@ -33,5 +33,5 @@ jobs:
       - name: Publish package as artifact
         uses: actions/upload-artifact@v3  # Updated to the latest version
         with:
-          name: shopping-list-backend:${{ env.TIMESTAMP }}
+          name: shopping-list-backend-${{ env.TIMESTAMP }}
           path: target/*.jar  # Adjust if your packaged artifact is not a jar
