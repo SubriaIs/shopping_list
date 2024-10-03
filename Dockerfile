@@ -8,8 +8,11 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
+# Update persistence.xml to replace localhost with mysql-db
+RUN sed -i 's/localhost/mysql-db/g' ./src/main/resources/META-INF/persistence.xml
+
 # Run the Maven package command to build the JAR file
-RUN mvn clean package
+RUN mvn clean package -DskipTests
 
 # Second stage: Create the final image with JDK 18
 FROM amazoncorretto:18
