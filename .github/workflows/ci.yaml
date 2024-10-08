@@ -38,13 +38,6 @@ jobs:
           java-version: '18'
           distribution: 'temurin'
 
-      - name: Wait for MySQL to be ready
-        run: |
-          until mysqladmin ping -h db --silent; do
-            echo "Waiting for database connection..."
-            sleep 5
-          done
-
       - name: Package the project
         run: mvn clean package
 
