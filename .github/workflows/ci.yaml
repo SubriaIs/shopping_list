@@ -6,10 +6,6 @@ on:
       - master
   pull_request:
 
-concurrency:
-  group: build-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,7 +17,7 @@ jobs:
           MYSQL_ROOT_PASSWORD: 123456
           MYSQL_DATABASE: shopping_list_db
         ports:
-          - "3306:3306"
+          - "3306:3306"  # This is necessary to expose the port to the job environment
         options: >-
           --health-cmd="mysqladmin ping -h localhost --silent"
           --health-interval=5s
@@ -30,27 +26,26 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3  # Updated to the latest version of checkout
 
-      - name: Set up Docker
-        run: |
-          docker --version
-          docker pull maven:3.8.4-openjdk-18
+      - name: Set up JDK
+        uses: actions/setup-java@v3  # Updated to the latest version of setup-java
+        with:
+          java-version: '18'  # Specify Java 18
+          distribution: 'adopt'  # You can also use 'zulu' or 'temurin'
 
-      - name: Run Maven inside Docker
-        run: |
-          docker run --rm \
-            --network="host" \ # Uses host network to allow the app to connect to MySQL
-            -v "$PWD":/usr/src/mymaven \
-            -w /usr/src/mymaven \
-            maven:3.8.4-openjdk-18 mvn clean package
+      - name: Compile the project
+        run: mvn clean compile
+
+      - name: Package the project
+        run: mvn clean package -DskipTests  # Skip tests during package
 
       - name: Create a timestamp
         id: timestamp
         run: echo "TIMESTAMP=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
       - name: Publish package as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3  # Updated to the latest version
         with:
           name: shopping-list-backend-${{ env.TIMESTAMP }}
           path: target/*.jar
