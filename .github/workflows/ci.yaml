@@ -32,14 +32,18 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          java-version: '18'
-          distribution: 'temurin'
+      - name: Set up Docker
+        run: |
+          docker --version
+          docker pull maven:3.8.4-openjdk-18
 
-      - name: Package the project
-        run: mvn clean package
+      - name: Run Maven inside Docker
+        run: |
+          docker run --rm \
+            --network="host" \ # Uses host network to allow the app to connect to MySQL
+            -v "$PWD":/usr/src/mymaven \
+            -w /usr/src/mymaven \
+            maven:3.8.4-openjdk-18 mvn clean package
 
       - name: Create a timestamp
         id: timestamp
