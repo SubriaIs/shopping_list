@@ -17,7 +17,7 @@ jobs:
           MYSQL_ROOT_PASSWORD: 123456
           MYSQL_DATABASE: shopping_list_db
         ports:
-          - "3306:3306"  # This is necessary to expose the port to the job environment
+          - "3306:3306"
         options: >-
           --health-cmd="mysqladmin ping -h localhost --silent"
           --health-interval=5s
@@ -26,29 +26,38 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v3  # Updated to the latest version of checkout
+        uses: actions/checkout@v3
 
       - name: Set up JDK
-        uses: actions/setup-java@v3  # Updated to the latest version of setup-java
+        uses: actions/setup-java@v3
         with:
-          java-version: '18'  # Specify Java 18
-          distribution: 'adopt'  # You can also use 'zulu' or 'temurin'
+          java-version: '18'
+          distribution: 'adopt'  # Can also use 'zulu' or 'temurin'
+
+      # Cache Maven dependencies
+      - name: Cache Maven repository
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
 
       - name: Compile the project
-        run: mvn clean compile
+        run: mvn clean compile --offline
 
       - name: Run tests
-        run: mvn clean test
+        run: mvn test --offline
 
       - name: Package the project
-        run: mvn clean package
+        run: mvn package --offline
 
       - name: Create a timestamp
         id: timestamp
         run: echo "TIMESTAMP=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
       - name: Publish package as artifact
-        uses: actions/upload-artifact@v3  # Updated to the latest version
+        uses: actions/upload-artifact@v3
         with:
           name: shopping-list-backend-${{ env.TIMESTAMP }}
-          path: target/*.jar  # Adjust if your packaged artifact is not a jar
+          path: target/*.jar
