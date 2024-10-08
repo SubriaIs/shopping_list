@@ -62,12 +62,13 @@ public class CategoryAPI {
     @Path("/category")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public void addCategory(Category category) {
+    public Response addCategory(Category category) {
         Optional<Category> existingCategory = myCategoryService.getCategoryByName(category.getCategoryName());
         if(existingCategory.isPresent()){
             throw new SLServiceException("Already Exist",400,"Duplicate Category Name!");
         }else{
             myCategoryService.createCategory(category);
+            return Response.status(Response.Status.CREATED).build();
         }
     }
 

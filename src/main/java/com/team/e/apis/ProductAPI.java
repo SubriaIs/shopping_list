@@ -72,12 +72,13 @@ public class ProductAPI {
     @Path("/product")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public void addProduct(Product product) {
+    public Response addProduct(Product product) {
         Optional<Product> existingProduct = productService.getProductByName(product.getProductName());
         if (existingProduct.isPresent()) {
             throw new SLServiceException("Already Exist",400,"Duplicate Product Name!");
         }else {
             productService.createProduct(product);
+            return Response.status(Response.Status.CREATED).build();
         }
     }
 
