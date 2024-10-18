@@ -1,6 +1,7 @@
 package com.team.e;
 
 import com.team.e.exceptions.GenericExceptionMapper;
+import com.team.e.filters.TokenValidationFilter;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jackson.JacksonFeature;
@@ -18,6 +19,7 @@ public class Main {
         final ResourceConfig rc = new ResourceConfig()
                 .packages("com.team.e") // Register your resources
                 .register(JacksonFeature.class)
+                .register(TokenValidationFilter.class)
                 .register(GenericExceptionMapper.class);
 
 
