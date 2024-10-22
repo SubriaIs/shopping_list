@@ -1,6 +1,7 @@
 package com.team.e.apis;
 
 import com.team.e.Services.NotificationService;
+import com.team.e.annotations.TokenRequired;
 import com.team.e.exceptions.SLServiceException;
 import com.team.e.models.Notification;
 import com.team.e.repositories.NotificationRepositoryImpl;
@@ -21,6 +22,7 @@ public class NotificationAPI {
 
     @GET
     @Path("/notification")
+    @TokenRequired
     @Produces(MediaType.APPLICATION_JSON)
     public List<Notification> getNotifications() {
         List<Notification> notifications = notificationService.getAllNotifications();
@@ -33,6 +35,7 @@ public class NotificationAPI {
 
     @GET
     @Path("/notification/id/{id}")
+    @TokenRequired
     @Produces(MediaType.APPLICATION_JSON)
     public Response getNotification(@PathParam("id") Long id) {
         Optional<Notification> notification = notificationService.getNotificationById(id);
@@ -45,6 +48,7 @@ public class NotificationAPI {
 
     @GET
     @Path("/notification/groupId/{id}")
+    @TokenRequired
     @Produces(MediaType.APPLICATION_JSON)
     public Response getNotificationsByGroupId(@PathParam("id") Long id) {
         List<Notification> notifications = notificationService.getNotificationByGroupId(id);
@@ -57,6 +61,7 @@ public class NotificationAPI {
 
     @GET
     @Path("/notification/triggeredBy/{id}")
+    @TokenRequired
     @Produces(MediaType.APPLICATION_JSON)
     public Response getNotificationsByTriggeredBy(@PathParam("id") Long id) {
         List<Notification> notifications = notificationService.getNotificationByTriggeredBy(id);

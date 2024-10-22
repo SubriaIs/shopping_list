@@ -2,6 +2,7 @@ package com.team.e.apis;
 
 import com.team.e.Services.ShoppingListProductService;
 import com.team.e.Services.ShoppingListService;
+import com.team.e.annotations.TokenRequired;
 import com.team.e.exceptions.SLServiceException;
 import com.team.e.models.ShoppingList;
 import com.team.e.models.ShoppingListProduct;
@@ -32,6 +33,7 @@ public class ShoppingListAPI {
 
     @GET
     @Path("/shoppingList")
+    @TokenRequired
     @Produces(MediaType.APPLICATION_JSON)
     public List<ShoppingList> getShoppingLists() {
         List<ShoppingList> shoppingLists = shoppingListService.getAllShoppingLists();
@@ -44,6 +46,7 @@ public class ShoppingListAPI {
 
     @GET
     @Path("/shoppingList/id/{id}")
+    @TokenRequired
     @Produces(MediaType.APPLICATION_JSON)
     public Response getShoppingList(@PathParam("id") Long id) {
         Optional<ShoppingList> shoppingList = shoppingListService.getShoppingListById(id);
@@ -56,6 +59,7 @@ public class ShoppingListAPI {
 
     @GET
     @Path("/shoppingList/group/{id}")
+    @TokenRequired
     @Produces(MediaType.APPLICATION_JSON)
     public Response getShoppingListByGroup(@PathParam("id") Long id) {
         Optional<ShoppingList> shoppingLists = shoppingListService.getShoppingListByGroupId(id);
@@ -68,6 +72,7 @@ public class ShoppingListAPI {
 
     @POST
     @Path("/shoppingList")
+    @TokenRequired
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response addShoppingList(ShoppingList shoppingList, @HeaderParam("xToken") String token) {
@@ -91,6 +96,7 @@ public class ShoppingListAPI {
 
     @PATCH
     @Path("/shoppingList/id/{id}")
+    @TokenRequired
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateShoppingList(@PathParam("id") Long id, ShoppingList shoppingList) {
@@ -105,6 +111,7 @@ public class ShoppingListAPI {
 
     @DELETE
     @Path("/shoppingList/id/{id}")
+    @TokenRequired
     public Response deleteShoppingList(@PathParam("id") Long id) {
         Optional<ShoppingList> existingShoppingList = shoppingListService.getShoppingListById(id);
         if (existingShoppingList.isPresent()) {
@@ -118,6 +125,7 @@ public class ShoppingListAPI {
     //ShoppingListProduct API
     @GET
     @Path("/shoppingList/product")
+    @TokenRequired
     @Produces(MediaType.APPLICATION_JSON)
     public List<ShoppingListProduct> getShoppingListProducts() {
         List<ShoppingListProduct> shoppingListProducts = shoppingListProductService.getAllShoppingListProducts();
@@ -130,6 +138,7 @@ public class ShoppingListAPI {
 
     @GET
     @Path("/shoppingList/product/id/{id}")
+    @TokenRequired
     @Produces(MediaType.APPLICATION_JSON)
     public Response getShoppingListProduct(@PathParam("id") Long id) {
         Optional<ShoppingListProduct> shoppingListProduct = shoppingListProductService.getShoppingListProductById(id);
@@ -142,6 +151,7 @@ public class ShoppingListAPI {
 
     @GET
     @Path("/shoppingList/product/shoppingListId/{id}")
+    @TokenRequired
     @Produces(MediaType.APPLICATION_JSON)
     public Response getShoppingListProductByShoppingListId(@PathParam("id") Long id) {
         List<ShoppingListProduct> shoppingListProductsByShoppingListId = shoppingListProductService.getShoppingListProductByShoppingListId(id);
@@ -154,6 +164,7 @@ public class ShoppingListAPI {
 
     @POST
     @Path("/shoppingList/product")
+    @TokenRequired
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response addShoppingListProduct(ShoppingListProduct shoppingListProduct) {
@@ -176,6 +187,7 @@ public class ShoppingListAPI {
 
     @PATCH
     @Path("/shoppingList/product/id/{id}")
+    @TokenRequired
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateShoppingListProduct(@PathParam("id") Long id, ShoppingListProduct shoppingListProduct) {
@@ -190,6 +202,7 @@ public class ShoppingListAPI {
 
     @DELETE
     @Path("/shoppingList/product/id/{id}")
+    @TokenRequired
     public Response deleteShoppingListProduct(@PathParam("id") Long id) {
         Optional<ShoppingListProduct> existingShoppingListProduct = shoppingListProductService.getShoppingListProductById(id);
         if (existingShoppingListProduct.isPresent()) {
