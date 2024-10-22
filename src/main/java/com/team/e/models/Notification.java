@@ -22,11 +22,11 @@ public class Notification {
     private Long notificationId;
 
     @ManyToOne
-    @JoinColumn(name = "groupId", foreignKey = @ForeignKey(name = "fk_group_notification"), nullable = true)
+    @JoinColumn(name = "groupId", foreignKey = @ForeignKey(name = "fk_group_notification"))
     private UserGroup notificationUserGroup;
 
     @ManyToOne(optional = true)
-    @JoinColumn(name = "triggeredBy",referencedColumnName = "userId", nullable = true, foreignKey = @ForeignKey(name = "fk_user_triggered_by"))
+    @JoinColumn(name = "triggeredBy",referencedColumnName = "userId", nullable = false, foreignKey = @ForeignKey(name = "fk_user_triggered_by"))
     private User triggeredBy;
 
     @Column(name = "message", columnDefinition = "TEXT", nullable = false)

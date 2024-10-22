@@ -11,16 +11,16 @@ import org.apache.logging.log4j.Logger;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class ShoppingListRepositoryImpl implements ShoppingListRepository {
 
     private EntityManagerFactory emf = Persistence.createEntityManagerFactory("shoppingListPU");
     protected static final Logger logger = LogManager.getLogger(ShoppingListRepositoryImpl.class);
 
-    private UserGroupRepositoryImpl userGroupRepository = new UserGroupRepositoryImpl();
+    private final UserGroupRepositoryImpl userGroupRepository = new UserGroupRepositoryImpl();
+    private final CommonRepositoryImpl commonRepository = new CommonRepositoryImpl();
+    private final NotificationRepositoryImpl notificationRepository = new NotificationRepositoryImpl();
 
     @Override
     public Optional<ShoppingList> findByGroupId(Long groupId) {
@@ -118,8 +118,8 @@ public class ShoppingListRepositoryImpl implements ShoppingListRepository {
             UserGroup newUserGroup = new UserGroup();
             newUserGroup.setGroupId(null);
             newUserGroup.setCreatedByUser(currentUser);
-            newUserGroup.setGroupName(shoppingList.getShoppingListName()+ "-" + currentUser.getUserName()); // Set a default group name
-            newUserGroup.setDescription(newUserGroup.getGroupName()+ " is a group for "+ shoppingList.getShoppingListName());
+            newUserGroup.setGroupName(shoppingList.getShoppingListName() + "-" + currentUser.getUserName()); // Set a default group name
+            newUserGroup.setDescription(newUserGroup.getGroupName() + " is a group for " + shoppingList.getShoppingListName());
 
             // Persist the new UserGroup
             UserGroup ug = userGroupRepository.saveReturn(newUserGroup);
@@ -162,7 +162,6 @@ public class ShoppingListRepositoryImpl implements ShoppingListRepository {
     }
 
 
-
     @Override
     public ShoppingList update(ShoppingList shoppingList, ShoppingList existingShoppingList) {
         EntityManager em = emf.createEntityManager();
@@ -192,19 +191,42 @@ public class ShoppingListRepositoryImpl implements ShoppingListRepository {
             // Find the ShoppingList before deletion
             ShoppingList shoppingList = em.find(ShoppingList.class, id);
             if (shoppingList != null) {
-                em.remove(shoppingList);
-                logger.info("Deleted ShoppingList with ID: {}", id);
+                // Bulk delete operations within the transaction
+                try {
+                    commonRepository.executeSQLNormal("DELETE FROM Notification n WHERE n.notificationUserGroup.groupId = :groupId", "groupId", shoppingList.getUserGroup().getGroupId());
+                    commonRepository.executeSQLNormal("DELETE FROM GroupMemberShip o WHERE o.userGroup.groupId = :groupId", "groupId", shoppingList.getUserGroup().getGroupId());
+                    commonRepository.executeSQLNormal("DELETE FROM ShoppingListProduct p WHERE p.shoppingList.shoppingListId = :shoppingListId", "shoppingListId", shoppingList.getShoppingListId());
+                    commonRepository.executeSQLNormal("DELETE FROM ShoppingList q WHERE q.userGroup.groupId = :groupId", "groupId", shoppingList.getUserGroup().getGroupId());
+                    commonRepository.executeSQLNormal("DELETE FROM UserGroup p WHERE p.groupId = :groupId", "groupId", shoppingList.getUserGroup().getGroupId());
+
+                    // Finally, remove the ShoppingList entity itself
+                    em.remove(shoppingList);
+
+                    logger.info("Deleted ShoppingList with ID: {}", id);
+                } catch (Exception ex) {
+                    // If any error occurs during bulk delete or remove, roll back the transaction
+                    em.getTransaction().rollback();
+                    logger.error("Error during deletion process: {}", ex.getMessage());
+                    throw ex;  // rethrow the exception to be handled later if needed
+                }
             } else {
                 logger.warn("ShoppingList with ID: {} not found", id);
             }
+
+            // If no exception, commit the transaction
             em.getTransaction().commit();
         } catch (Exception e) {
-            em.getTransaction().rollback();
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();  // Rollback if not already rolled back
+            }
             logger.error("Error deleting ShoppingList: {}", e.getMessage());
         } finally {
-            em.close();
+            if (em.isOpen()) {
+                em.close();
+            }
         }
     }
+
 
 
 }

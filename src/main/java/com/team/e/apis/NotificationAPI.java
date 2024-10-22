@@ -3,7 +3,6 @@ package com.team.e.apis;
 import com.team.e.Services.NotificationService;
 import com.team.e.exceptions.SLServiceException;
 import com.team.e.models.Notification;
-import com.team.e.models.UserGroup;
 import com.team.e.repositories.NotificationRepositoryImpl;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -68,7 +67,7 @@ public class NotificationAPI {
         }
     }
 
-    @POST
+    /*@POST
     @Path("/notification")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -76,5 +75,5 @@ public class NotificationAPI {
         notificationService.createNotification(notification);
         return Response.status(Response.Status.CREATED).build();
 
-    }
+    }*/
 }

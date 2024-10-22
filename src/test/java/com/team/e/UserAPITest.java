@@ -47,8 +47,8 @@ public class UserAPITest extends JerseyTest{
     @Test
     public void testGetAllUsers() {
         HashMap<String, Object> hashObjects = getAllUsers();
-        List<User> categories = (List<User>) hashObjects.get("users");
-        assertNotNull(categories.get(categories.size() - 1).getUserName());
+        List<User> users = (List<User>) hashObjects.get("users");
+        assertNotNull(users.get(users.size() - 1).getUserName());
     }
 
 

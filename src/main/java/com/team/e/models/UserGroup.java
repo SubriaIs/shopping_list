@@ -15,6 +15,7 @@ import java.util.List;
 @Getter
 @Setter
 @AllArgsConstructor
+@JsonIgnoreProperties({"groupUsers", "groupNotifications", "shoppingList"})
 public class UserGroup {
     @Id
     @Getter

@@ -1,6 +1,5 @@
 package com.team.e.Services;
 
-import com.team.e.models.GroupMemberShip;
 import com.team.e.models.Notification;
 import com.team.e.repositories.NotificationRepositoryImpl;
 
