@@ -35,14 +35,14 @@ jobs:
           distribution: 'adopt'  # You can also use 'zulu' or 'temurin'
 
       - name: Make test-runner.sh executable
-        run: chmod +x ./test-runner.sh  # Ensure the test script is executable
+        run: chmod +x ./scripts/test-runner.sh  # Ensure the test script in the scripts folder is executable
 
       - name: Run test-runner.sh
         run: |
-          timeout 60m ./test-runner.sh  # Run the script with a long timeout of 60 minutes
+          timeout 60m ./scripts/test-runner.sh  # Run the script with a long timeout of 60 minutes
 
       - name: Package the project
-        run: mvn clean package -DskipTests  # Skip tests during package because run in previous stage
+        run: mvn clean package -DskipTests  # Skip tests during package
 
       - name: Create a timestamp
         id: timestamp
