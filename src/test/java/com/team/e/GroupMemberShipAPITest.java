@@ -31,7 +31,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@TestInstance(TestInstance.Lifecycle.PER_METHOD)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class GroupMemberShipAPITest extends JerseyTest {
     private static final String PATH_GROUP = "/v1/group";
     private static final String PATH_GROUP_MEMBER = "/v1/group/member";

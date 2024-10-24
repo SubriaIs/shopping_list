@@ -1,15 +1,12 @@
 package com.team.e;
 
-import com.team.e.Services.UserGroupService;
 import com.team.e.Services.UserService;
 import com.team.e.apis.GroupAPI;
 import com.team.e.apis.UserAPI;
 import com.team.e.exceptions.SLServiceException;
 import com.team.e.filters.TokenValidationFilter;
-import com.team.e.models.GroupMemberShip;
 import com.team.e.models.User;
 import com.team.e.models.UserGroup;
-import com.team.e.repositories.UserGroupRepositoryImpl;
 import com.team.e.repositories.UserRepositoryImpl;
 import com.team.e.utils.TestTokenGeneratorHelper;
 import com.team.e.utils.models.TokenResponse;
@@ -20,10 +17,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -31,14 +25,13 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@TestInstance(TestInstance.Lifecycle.PER_METHOD)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class GroupAPITest extends JerseyTest {
     private static final String PATH_GROUP = "/v1/group";
    // private static final String PATH_GROUP_MEMBER = "/v1/group/member";
     private static final String PATH_USER = "/v1/user";
 
     UserService userService= new UserService(new UserRepositoryImpl());
-    //UserGroupService userGroupService= new UserGroupService(new UserGroupRepositoryImpl());
 
     @Override
     protected Application configure() {

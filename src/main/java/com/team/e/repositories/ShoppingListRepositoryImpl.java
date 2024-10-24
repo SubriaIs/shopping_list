@@ -114,30 +114,16 @@ public class ShoppingListRepositoryImpl implements ShoppingListRepository {
                 throw new IllegalArgumentException("User not found with the provided token.");
             }
 
-            // Create a new UserGroup if none exists
+            // Create and persist a new UserGroup if none exists
             UserGroup newUserGroup = new UserGroup();
             newUserGroup.setGroupId(null);
             newUserGroup.setCreatedByUser(currentUser);
             newUserGroup.setGroupName(shoppingList.getShoppingListName() + "-" + currentUser.getUserName()); // Set a default group name
             newUserGroup.setDescription(newUserGroup.getGroupName() + " is a group for " + shoppingList.getShoppingListName());
 
-            // Persist the new UserGroup
-            UserGroup ug = userGroupRepository.saveReturn(newUserGroup);
 
-            Optional<UserGroup> userGroup = userGroupRepository.findById(ug.getGroupId());
-            if (userGroup.isEmpty()) {
-                throw new SLServiceException("User group isn't created as expected.");
-            }
-
-            // Set the new UserGroup to the ShoppingList
-            shoppingList.setUserGroup(userGroup.get());
-
-
-            // Explicitly merge the UserGroup to the current persistence context
-            ug = em.merge(userGroup.get());
-
-            // Assign the merged UserGroup to the ShoppingList
-            shoppingList.setUserGroup(ug);
+            // Set the persisted UserGroup to the ShoppingList
+            shoppingList.setUserGroup(newUserGroup);
 
             LocalDateTime currentDate = LocalDateTime.now();
 
@@ -149,8 +135,8 @@ public class ShoppingListRepositoryImpl implements ShoppingListRepository {
 
             shoppingList.setCreatedAt(formattedDate);
 
-            // Now merge the ShoppingList (not persist)
             em.merge(shoppingList);
+
             em.getTransaction().commit();
         } catch (Exception e) {
             em.getTransaction().rollback();
@@ -160,6 +146,7 @@ public class ShoppingListRepositoryImpl implements ShoppingListRepository {
             em.close();
         }
     }
+
 
 
     @Override
