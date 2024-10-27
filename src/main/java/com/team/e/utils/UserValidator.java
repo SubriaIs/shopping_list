@@ -1,6 +1,11 @@
 package com.team.e.utils;
 
+import com.team.e.repositories.UserRepositoryImpl;
+
 public final class UserValidator {
+    private static final UserRepositoryImpl userRepository = new UserRepositoryImpl();
+    ;
+
     private UserValidator() {
         // Private constructor to prevent instantiation
     }
@@ -40,6 +45,12 @@ public final class UserValidator {
         }
     }
 
+    public static void validatePasswordCreate(String password) {
+        if (userRepository.isPasswordExist(password)) {
+            throw new IllegalArgumentException("Password should be unique or no old password.");
+        }
+    }
+
     // Validate phoneNumber for null, empty, or invalid format
     public static void validatePhoneNumber(String phoneNumber) {
         if (phoneNumber == null || phoneNumber.isEmpty()) {
@@ -57,5 +68,6 @@ public final class UserValidator {
         validateEmail(email);
         validatePhoneNumber(phoneNumber);
         validatePassword(password);
+        validatePasswordCreate(password);
     }
 }

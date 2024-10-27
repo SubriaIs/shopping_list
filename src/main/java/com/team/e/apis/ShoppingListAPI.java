@@ -2,14 +2,15 @@ package com.team.e.apis;
 
 import com.team.e.Services.ShoppingListProductService;
 import com.team.e.Services.ShoppingListService;
+import com.team.e.Services.UserService;
 import com.team.e.annotations.TokenRequired;
 import com.team.e.exceptions.SLServiceException;
 import com.team.e.models.ShoppingList;
 import com.team.e.models.ShoppingListProduct;
 import com.team.e.models.User;
-import com.team.e.models.UserGroup;
 import com.team.e.repositories.ShoppingListProductRepositoryImpl;
 import com.team.e.repositories.ShoppingListRepositoryImpl;
+import com.team.e.repositories.UserRepositoryImpl;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -24,11 +25,13 @@ public class ShoppingListAPI {
     //private ShoppingListRepositoryImpl shoppingListRepository;
 
     private ShoppingListProductService shoppingListProductService;
+    private UserService userService;
     //private ShoppingListProductRepositoryImpl shoppingListProductRepository;
 
     public ShoppingListAPI() {
         this.shoppingListService = new ShoppingListService(new ShoppingListRepositoryImpl());
         this.shoppingListProductService = new ShoppingListProductService(new ShoppingListProductRepositoryImpl());
+        this.userService = new UserService(new UserRepositoryImpl());
     }
 
     @GET
@@ -67,6 +70,71 @@ public class ShoppingListAPI {
             return Response.ok(shoppingLists.get()).build();
         } else {
             throw new SLServiceException("Not found",404,"Group id not found: "+id);
+        }
+    }
+
+    @GET
+    @Path("/shoppingList/user/shared")
+    @TokenRequired
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<ShoppingList> getSharedShoppingListByUserId(@HeaderParam("xToken") String xToken) {
+        Long userId = null;
+        Optional<User> user = userService.validateToken(xToken);
+        if(user.isEmpty()){
+            throw new SLServiceException("Not authorized",401,"Not authorized user.");
+        }
+        else {
+            userId = user.get().getUserId();
+        }
+
+        List<ShoppingList> shoppingLists = shoppingListService.getSharedShoppingListsByUserId(userId);
+        if(shoppingLists .isEmpty()){
+            throw new SLServiceException("Not found",404,"No ShoppingLists found in database.");
+        }else{
+            return shoppingLists ;
+        }
+    }
+
+    @GET
+    @Path("/shoppingList/user/all")
+    @TokenRequired
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<ShoppingList> getAllShoppingListByUserId(@HeaderParam("xToken") String xToken) {
+        Long userId = null;
+        Optional<User> user = userService.validateToken(xToken);
+        if(user.isEmpty()){
+            throw new SLServiceException("Not authorized",401,"Not authorized user.");
+        }
+        else {
+            userId = user.get().getUserId();
+        }
+
+        List<ShoppingList> shoppingLists = shoppingListService.getAllShoppingListsByUserId(userId);
+        if(shoppingLists .isEmpty()){
+            throw new SLServiceException("Not found",404,"No ShoppingLists found in database.");
+        }else{
+            return shoppingLists ;
+        }
+    }
+
+    @GET
+    @Path("/shoppingList/user/owned")
+    @TokenRequired
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<ShoppingList> getOwnShoppingListByUserId(@HeaderParam("xToken") String xToken) {
+        Long userId = null;
+        Optional<User> user = userService.validateToken(xToken);
+        if(user.isEmpty()){
+            throw new SLServiceException("Not authorized",401,"Not authorized user.");
+        }
+        else {
+            userId = user.get().getUserId();
+        }
+        List<ShoppingList> shoppingLists = shoppingListService.getOwnedShoppingListsByUserId(userId);
+        if(shoppingLists .isEmpty()){
+            throw new SLServiceException("Not found",404,"No ShoppingLists found in database.");
+        }else{
+            return shoppingLists ;
         }
     }
 

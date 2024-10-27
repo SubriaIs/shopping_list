@@ -4,6 +4,7 @@ import com.team.e.apis.UserAPI;
 import com.team.e.models.User;
 import com.team.e.utils.HashHelper;
 import com.team.e.utils.TestTokenGeneratorHelper;
+import com.team.e.utils.models.LoginRequest;
 import com.team.e.utils.models.TokenResponse;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.core.Application;
@@ -143,28 +144,39 @@ public class UserAPITest extends JerseyTest{
 
     @Test
     public void testGetUserLogIn() {
+        // Fetch users and check if list is not empty
         HashMap<String, Object> hashObjects = getAllUsers();
         List<User> users = (List<User>) hashObjects.get("users");
         assertFalse(users.isEmpty(), "No users available for testing.");
+
+        // Find the test user in the list
         User findUser = users.stream()
                 .filter(cat -> "test-user".equals(cat.getUserName()))
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("Test user not found"));
-        // Step 2: Make GET request to fetch product by ID
-        Response response = target(PATH_USER + "/login/{email}/{password}")
-                .resolveTemplate("email", findUser.getEmail())
-                .resolveTemplate("password", "2345ign6")
+
+        // Create the login request with the user's email and correct password
+        LoginRequest lg = new LoginRequest();  // Confirm password is correct
+        lg.setEmail(findUser.getEmail());
+        lg.setPassword("2345ign6");
+
+        TokenResponse fetchToken;
+        try (Response response = target(PATH_USER + "/login")
                 .request(MediaType.APPLICATION_JSON)
-                .get();
+                .post(Entity.json(lg))) {
 
-        // Step 3: Assert the response status and returned data
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus(), "Expected status OK (200).");
+            // Assert the response status
+            assertEquals(Response.Status.OK.getStatusCode(), response.getStatus(), "Expected status OK (200).");
 
-        // Step 4: Read the response entity as a Category object and assert
-        TokenResponse fetchToken = response.readEntity(TokenResponse.class);
+            // Parse the response to TokenResponse
+            fetchToken = response.readEntity(TokenResponse.class);
+        }
+
+        // Assert that the new token is generated and not the same as the existing one
         assertNotEquals(findUser.getToken(), fetchToken.getXToken(), "Tokens should not match.");
-
     }
+
+
 
     private void deleteUser() {
         TokenResponse tokenResponse = TestTokenGeneratorHelper.getNewTokenAfterLogin("test-user@gmail.com","2345ign6");

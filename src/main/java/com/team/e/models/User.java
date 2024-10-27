@@ -30,7 +30,7 @@ public class User {
     @Column(name = "phoneNumber", nullable = false, unique = true, length = 100)
     private String phoneNumber;
 
-    @Column(name = "password",nullable = false, length =254)
+    @Column(name = "password",nullable = false, length =254, unique = true)
     private String password;
 
     @Column(name = "token",nullable = false, length =254)

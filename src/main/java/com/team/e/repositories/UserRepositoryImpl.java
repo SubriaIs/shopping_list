@@ -55,6 +55,37 @@ public class UserRepositoryImpl implements UserRepository {
         }
     }
 
+    public boolean isPasswordExist(String password) {
+        EntityManager em = emf.createEntityManager();
+
+        try {
+            String hashedPassword = HashHelper.encode(password);
+            TypedQuery<User> query = em.createQuery("SELECT p FROM User p WHERE p.password = :password", User.class);
+            query.setParameter("password", hashedPassword);
+
+            Optional<User> user = Optional.ofNullable(query.getSingleResult());
+            return user.isPresent();
+
+        } catch (NoResultException e) {
+            // Log the warning for no results
+            logger.warn("{} : No user found with the given password: {}", LocalDateTime.now(), e.getMessage());
+            return false; // User not found
+
+        } catch (NonUniqueResultException e) {
+            // Log a warning for duplicate results
+            logger.warn("{} : Multiple users found with the same password: {}", LocalDateTime.now(), e.getMessage());
+            return true; // Technically, you found a user, but handle this case as needed
+
+        } catch (Exception e) {
+            // Log any other exception
+            logger.warn("{} : An error occurred while checking user existence: {}", LocalDateTime.now(), e.getMessage());
+            throw new SLServiceException("SQL Error",500,"Error encountered during SQL execution.");
+        }
+        finally {
+            em.close();
+        }
+    }
+
     @Override
     public List<User> findAll() {
         EntityManager em = emf.createEntityManager();
@@ -136,6 +167,7 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public User update(User entity, User existEntity) {
         UserValidator.validatePassword(entity.getPassword());
+        UserValidator.validatePasswordCreate(entity.getPassword());
         EntityManager em = emf.createEntityManager();
         try {
             em.getTransaction().begin();

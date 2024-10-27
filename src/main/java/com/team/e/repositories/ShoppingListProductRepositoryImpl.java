@@ -84,6 +84,7 @@ public class ShoppingListProductRepositoryImpl implements ShoppingListProductRep
             existingShoppingListProducts.setProductName(shoppingListProduct.getProductName());
             existingShoppingListProducts.setQuantity(shoppingListProduct.getQuantity());
             existingShoppingListProducts.setPurchase(shoppingListProduct.getPurchase());
+            existingShoppingListProducts.setUnit(shoppingListProduct.getUnit());
             shoppingListProduct = em.merge(existingShoppingListProducts);
             em.getTransaction().commit();
             logger.info(shoppingListProduct.toString());

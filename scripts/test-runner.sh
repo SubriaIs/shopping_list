@@ -13,5 +13,5 @@ for test_class in $(find ./src/test/java/com/team/e -name "*Test.java" | sed 's/
 do
     # Run Maven clean test for each test class
     echo "Running test: $test_class"
-    mvn clean test -Dtest=$test_class
+    mvn clean test -Dtest=$test_class -DfailIfNoTests=false
 done

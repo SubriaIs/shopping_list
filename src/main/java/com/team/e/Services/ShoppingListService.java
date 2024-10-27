@@ -20,6 +20,18 @@ public class ShoppingListService {
         return shoppingListRepository.findAll();
     }
 
+    public List<ShoppingList> getAllShoppingListsByUserId(Long id) {
+        return shoppingListRepository.findByAllShoppingListByUserId(id);
+    }
+
+    public List<ShoppingList> getSharedShoppingListsByUserId(Long id) {
+        return shoppingListRepository.findBySharedShoppingListByUserId(id);
+    }
+
+    public List<ShoppingList> getOwnedShoppingListsByUserId(Long id) {
+        return shoppingListRepository.findByOwnedShoppingListByUserId(id);
+    }
+
     public Optional<ShoppingList> getShoppingListById(Long id) {
         return shoppingListRepository.findById(id);
     }

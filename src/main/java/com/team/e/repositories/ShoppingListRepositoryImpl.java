@@ -1,6 +1,5 @@
 package com.team.e.repositories;
 
-import com.team.e.exceptions.SLServiceException;
 import com.team.e.interfaces.ShoppingListRepository;
 import com.team.e.models.ShoppingList;
 import com.team.e.models.User;
@@ -54,6 +53,56 @@ public class ShoppingListRepositoryImpl implements ShoppingListRepository {
         } finally {
             em.close();
         }
+    }
+
+    @Override
+    public List<ShoppingList> findBySharedShoppingListByUserId(Long id) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            TypedQuery<ShoppingList> query = em.createQuery(
+                    "SELECT s FROM ShoppingList s WHERE s.userGroup.groupId IN (" +
+                            "SELECT u.userGroup.groupId FROM GroupMemberShip u WHERE u.user.userId = :userId)",
+                    ShoppingList.class);
+            query.setParameter("userId", id);
+            return query.getResultList();
+        } catch (NoResultException e) {
+            logger.warn("{} : {}", LocalDateTime.now(), e.getMessage());
+            return Collections.emptyList();
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public List<ShoppingList> findByOwnedShoppingListByUserId(Long id) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            TypedQuery<ShoppingList> query = em.createQuery(
+                    "SELECT s FROM ShoppingList s WHERE s.userGroup.groupId IN (" +
+                            "SELECT u.groupId FROM UserGroup u WHERE u.createdByUser.userId = :userId)",
+                    ShoppingList.class);
+            query.setParameter("userId", id);
+            return query.getResultList();
+        } catch (NoResultException e) {
+            logger.warn("{} : {}", LocalDateTime.now(), e.getMessage());
+            return Collections.emptyList();
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public List<ShoppingList> findByAllShoppingListByUserId(Long id) {
+       List<ShoppingList> alls = new ArrayList<>(Collections.emptyList());
+       List<ShoppingList> shared =findBySharedShoppingListByUserId(id);
+       List<ShoppingList> owned =findByOwnedShoppingListByUserId(id);
+       if(!shared.isEmpty()){
+           alls.addAll(shared);
+       }
+       if(!owned.isEmpty()){
+           alls.addAll(owned);
+       }
+       return alls;
     }
 
     @Override

@@ -29,6 +29,9 @@ public class ShoppingListProduct {
     @Column(name = "quantity", nullable = false)
     private Integer quantity = 0; // Setting the default value in the entity
 
+    @Column(name = "unit", nullable = false)
+    private String unit = "kg";
+
     @Column(name = "purchase", nullable = false)
     private Boolean purchase = false;
 

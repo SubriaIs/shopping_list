@@ -6,6 +6,7 @@ import com.team.e.exceptions.SLServiceException;
 import com.team.e.models.User;
 import com.team.e.repositories.UserRepositoryImpl;
 import com.team.e.utils.HashHelper;
+import com.team.e.utils.models.LoginRequest;
 import com.team.e.utils.models.TokenResponse;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -65,15 +66,19 @@ public class UserAPI {
     }
 
     //No need token for login
-    @GET
-    @Path("/user/login/{email}/{password}")
+    @POST
+    @Path("/user/login")
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getUserByEmailAndPassword(@PathParam("email") String email, @PathParam("password") String password) {
+    public Response loginUser(LoginRequest loginRequest) {
+        String email = loginRequest.getEmail();
+        String password = loginRequest.getPassword();
+
         Optional<User> user = userService.getUserByEmailAndPassword(email, password);
         if (user.isPresent()) {
-            user.get().setToken(HashHelper.encode(user.get().getEmail()+user.get().getPassword()+LocalDateTime.now()));
-            User retrivedUser = userService.UpdateToken(user.get());
-            return Response.ok(new TokenResponse(retrivedUser.getToken())).build();
+            user.get().setToken(HashHelper.encode(user.get().getEmail() + user.get().getPassword() + LocalDateTime.now()));
+            User retrievedUser = userService.UpdateToken(user.get());
+            return Response.ok(new TokenResponse(retrievedUser.getToken())).build();
         } else {
             throw new SLServiceException("Not found", 404, "User not found: " + email);
         }

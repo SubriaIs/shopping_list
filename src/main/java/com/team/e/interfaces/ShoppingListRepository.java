@@ -10,6 +10,10 @@ import java.util.Optional;
 public interface ShoppingListRepository extends GenericRepository<ShoppingList, Long>{
     Optional<ShoppingList> findByGroupId(Long id);
     List<ShoppingList> findByCreatedAt(LocalDateTime date);
+    List<ShoppingList> findBySharedShoppingListByUserId(Long id);
+    List<ShoppingList> findByOwnedShoppingListByUserId(Long id);
+    List<ShoppingList> findByAllShoppingListByUserId(Long id);
+
 
     void saveShoppingList(ShoppingList shoppingList, String token);
 }

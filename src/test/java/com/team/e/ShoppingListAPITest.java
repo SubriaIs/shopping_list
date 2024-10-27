@@ -34,14 +34,10 @@ import java.util.List;
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class ShoppingListServiceAPITest extends JerseyTest {
+public class ShoppingListAPITest extends JerseyTest {
     private static final String PATH_SHOPPING_LIST = "/v1/shoppingList";
-    private static final String PATH_GROUP = "/v1/group";
     private static final String PATH_USER = "/v1/user";
 
-    UserService userService = new UserService(new UserRepositoryImpl());
-    ShoppingListService shoppingListService= new ShoppingListService(new ShoppingListRepositoryImpl());
-    UserGroupService userGroupService = new UserGroupService(new UserGroupRepositoryImpl());
 
     @Override
     protected Application configure() {
@@ -171,28 +167,6 @@ public class ShoppingListServiceAPITest extends JerseyTest {
             assertEquals(shoppingList.getDescription(), updated.getDescription(), "Shopping List description should match.");
         }
     }
-
-
-    // Group operations
-    private HashMap<String, Object> getAllGroups() {
-        TokenResponse tokenResponse = TestTokenGeneratorHelper.getNewTokenAfterLogin("test-user-gs@gmail.com", "2345jigsn6");
-
-        HashMap<String, Object> returnObjects = new HashMap<>();
-        Response response = target(PATH_GROUP).request(MediaType.APPLICATION_JSON)
-                .header("xToken", tokenResponse.getXToken())
-                .get();
-
-        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON, response.getMediaType().toString());
-
-        List<UserGroup> groups = response.readEntity(new GenericType<>() {});
-        returnObjects.put("response", response);
-        returnObjects.put("groups", groups);
-        assertFalse(groups.isEmpty());
-        return returnObjects;
-    }
-
-
 
     // ShoppingList operations
     private HashMap<String, Object> getAllShoppingLists() {

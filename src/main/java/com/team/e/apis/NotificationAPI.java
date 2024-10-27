@@ -1,23 +1,29 @@
 package com.team.e.apis;
 
+import com.team.e.Services.GroupMemberShipService;
 import com.team.e.Services.NotificationService;
 import com.team.e.annotations.TokenRequired;
 import com.team.e.exceptions.SLServiceException;
+import com.team.e.models.GroupMemberShip;
 import com.team.e.models.Notification;
+import com.team.e.repositories.GroupMemberShipRepositoryImpl;
 import com.team.e.repositories.NotificationRepositoryImpl;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 @Path("/v1")
 public class NotificationAPI {
     private NotificationService notificationService;
+    private GroupMemberShipService groupMemberShipService;
 
     public NotificationAPI() {
         this.notificationService = new NotificationService(new NotificationRepositoryImpl());
+        this.groupMemberShipService = new GroupMemberShipService(new GroupMemberShipRepositoryImpl());
     }
 
     @GET
@@ -70,6 +76,24 @@ public class NotificationAPI {
         }else{
             return Response.ok(notifications).build();
         }
+    }
+
+    @GET
+    @Path("/notification/user/{id}")
+    @TokenRequired
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getNotificationsByUserIdBy(@PathParam("id") Long userId) {
+       List<GroupMemberShip> userGroupMemberShips = this.groupMemberShipService.getGroupMemberByUserId(userId);
+       List<Notification> userNotifications = new java.util.ArrayList<>(Collections.emptyList());
+
+       userGroupMemberShips.forEach(ugm ->{
+           List<Notification> findNotifications = notificationService.getNotificationByGroupId(ugm.getUserGroup().getGroupId());
+           if(!findNotifications.isEmpty()){
+               userNotifications.addAll(findNotifications);
+           }
+       } );
+
+       return Response.ok(userNotifications).build();
     }
 
     /*@POST
