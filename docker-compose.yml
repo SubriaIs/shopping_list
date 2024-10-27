@@ -9,6 +9,10 @@ services:
       - "8082:8082"
     depends_on:
       - db
+    environment:
+      DB_HOST: db  # Use 'db' as the hostname
+    networks:
+      - app_network
 
   db:
     image: subriais/shopping_list_db:1.0.0
@@ -18,10 +22,15 @@ services:
       MYSQL_DATABASE: shopping_list_db
     ports:
       - "3306:3306"
-    hostname: mysql-db
     volumes:
-      - db_data:/var/lib/mysql  # Define the volume for persistence
+      - db_data:/var/lib/mysql
+    networks:
+      - app_network
 
 volumes:
   db_data:
-    driver: local  # This uses a local volume driver
+    driver: local
+
+networks:
+  app_network:
+    driver: bridge

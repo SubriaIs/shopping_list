@@ -9,7 +9,7 @@ COPY pom.xml .
 COPY src ./src
 
 # Update persistence.xml to replace localhost with mysql-db
-RUN sed -i 's/localhost/mysql-db/g' ./src/main/resources/META-INF/persistence.xml
+RUN sed -i 's/localhost/db/g' ./src/main/resources/META-INF/persistence.xml
 
 # Run the Maven package command to build the JAR file
 RUN mvn clean package -DskipTests
