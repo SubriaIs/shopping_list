@@ -1,6 +1,7 @@
 package com.team.e;
 
 import com.team.e.exceptions.GenericExceptionMapper;
+import com.team.e.filters.CORSFilter;
 import com.team.e.filters.TokenValidationFilter;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
@@ -18,9 +19,11 @@ public class Main {
         // Create ResourceConfig and register packages and exception mappers
         final ResourceConfig rc = new ResourceConfig()
                 .packages("com.team.e") // Register your resources
+                .register(CORSFilter.class)
                 .register(JacksonFeature.class)
                 .register(TokenValidationFilter.class)
                 .register(GenericExceptionMapper.class);
+
 
 
         final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(URI.create(BASE_URI), rc);
