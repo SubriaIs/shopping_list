@@ -4,6 +4,7 @@ import com.team.e.exceptions.SLServiceException;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerResponseContext;
 import jakarta.ws.rs.container.ContainerResponseFilter;
+import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
 
 import java.io.IOException;
@@ -18,16 +19,26 @@ public class CORSFilter implements ContainerResponseFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
+
         // Allow all origins
         responseContext.getHeaders().add("Access-Control-Allow-Origin", "*");
 
-        // Include allowed methods in response
+        // Set allowed methods in response headers
         responseContext.getHeaders().add("Access-Control-Allow-Methods", String.join(", ", ALLOWED_METHODS));
 
-        // Allow specific headers
+        // Set allowed headers
         responseContext.getHeaders().add("Access-Control-Allow-Headers", "Content-Type, xToken");
 
-        // Check if the request method is allowed
+        // Set allowed credentials (optional, if needed)
+        responseContext.getHeaders().add("Access-Control-Allow-Credentials", "true");
+
+        // Handle OPTIONS preflight request
+        if ("OPTIONS".equalsIgnoreCase(requestContext.getMethod())) {
+            responseContext.setStatus(Response.Status.NO_CONTENT.getStatusCode());
+            return;
+        }
+
+        // Check if the request method is allowed, if not, throw an exception
         String requestMethod = requestContext.getMethod();
         if (!ALLOWED_METHODS.contains(requestMethod)) {
             throw new SLServiceException("Method Not Allowed", 405, "HTTP method " + requestMethod + " is not allowed.");
