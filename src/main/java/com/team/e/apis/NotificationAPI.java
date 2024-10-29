@@ -105,7 +105,7 @@ public class NotificationAPI {
 
     }*/
 
-    @DELETE
+    /*@DELETE
     @Path("/notification/id/{id}")
     @TokenRequired
     public Response deleteNotification(@PathParam("id") Long id) {
@@ -116,5 +116,5 @@ public class NotificationAPI {
         } else {
             throw new SLServiceException("Not found", 404, "Notification id not found: " + id);
         }
-    }
+    }*/
 }
