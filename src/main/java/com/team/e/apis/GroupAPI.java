@@ -76,7 +76,7 @@ public class GroupAPI {
     }
 
 
-    /*@POST
+    @POST
     @Path("/group")
     @TokenRequired
     @Consumes(MediaType.APPLICATION_JSON)
@@ -85,7 +85,7 @@ public class GroupAPI {
         userGroupService.createUserGroup(userGroup);
         return Response.status(Response.Status.CREATED).build();
 
-    }*/
+    }
 
     @PATCH
     @Path("/group/id/{id}")
@@ -106,7 +106,7 @@ public class GroupAPI {
         }
     }
 
-    /*@DELETE
+    @DELETE
     @Path("/group/id/{id}")
     @TokenRequired
     public Response deleteUserGroup(@HeaderParam("xToken") String xToken, @PathParam("id") Long id) {
@@ -121,7 +121,7 @@ public class GroupAPI {
         } else {
             throw new SLServiceException("Not found", 404, "Group id not found: " + id);
         }
-    }*/
+    }
 
     // GroupMemberShip
     @GET
