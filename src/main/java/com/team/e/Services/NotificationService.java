@@ -32,4 +32,8 @@ public class NotificationService {
     public void createNotification(Notification notification) {
         notificationRepository.save(notification);
     }
+
+    public void removeNotification(Long id) {
+        notificationRepository.delete(id);
+    }
 }

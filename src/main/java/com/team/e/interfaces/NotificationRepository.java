@@ -16,6 +16,7 @@ public interface NotificationRepository {
 
     void save(Notification entity);
 
+    void delete(Long id);
 
 
 }

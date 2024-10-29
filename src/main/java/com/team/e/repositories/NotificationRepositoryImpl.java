@@ -66,7 +66,7 @@ public class NotificationRepositoryImpl implements NotificationRepository {
         EntityManager em = emf.createEntityManager();
         List<Notification> Notifications;
         try {
-            TypedQuery<Notification> query = em.createQuery("SELECT p FROM Notification p WHERE p.notificationUserGroup.triggeredBy = :triggeredBy", Notification.class);
+            TypedQuery<Notification> query = em.createQuery("SELECT p FROM Notification p WHERE p.triggeredBy.userId = :triggeredBy", Notification.class);
             query.setParameter("triggeredBy", triggeredBy);
             try {
                 Notifications = query.getResultList();
@@ -82,6 +82,25 @@ public class NotificationRepositoryImpl implements NotificationRepository {
     }
 
     @Override
+    public void delete(Long id) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+
+            // Use JPQL to delete the product
+            em.createQuery("DELETE FROM Notification p WHERE p.notificationId = :notificationId")
+                    .setParameter("notificationId", id)
+                    .executeUpdate();
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            em.getTransaction().rollback(); // Rollback in case of an error
+            logger.warn("Error occurred while deleting notification: {}", e.getMessage());
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
     public void save(Notification notification) {
         EntityManager em = emf.createEntityManager();
         try {
@@ -90,12 +109,11 @@ public class NotificationRepositoryImpl implements NotificationRepository {
                 LocalDateTime currentDate = LocalDateTime.now();
 
                 // Define the desired date format
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
                 // Format the LocalDate to String
                 String formattedDate = currentDate.format(formatter);
-
-                notification.setCreatedAt(LocalDateTime.parse(formattedDate));
+                notification.setCreatedAt(formattedDate);
                 em.persist(notification);
             } else {
                 logger.error(notification.getNotificationId() + "Id already exist. ");

@@ -3,10 +3,12 @@ package com.team.e;
 import com.team.e.Services.UserGroupService;
 import com.team.e.Services.UserService;
 import com.team.e.apis.GroupAPI;
+import com.team.e.apis.NotificationAPI;
 import com.team.e.apis.UserAPI;
 import com.team.e.exceptions.SLServiceException;
 import com.team.e.filters.TokenValidationFilter;
 import com.team.e.models.GroupMemberShip;
+import com.team.e.models.Notification;
 import com.team.e.models.User;
 import com.team.e.models.UserGroup;
 import com.team.e.repositories.UserGroupRepositoryImpl;
@@ -36,16 +38,18 @@ public class GroupMemberShipAPITest extends JerseyTest {
     private static final String PATH_GROUP = "/v1/group";
     private static final String PATH_GROUP_MEMBER = "/v1/group/member";
     private static final String PATH_USER = "/v1/user";
+    private static final String PATH_NOTIFICATION = "/v1/notification";
 
     UserService userService = new UserService(new UserRepositoryImpl());
     UserGroupService userGroupService = new UserGroupService(new UserGroupRepositoryImpl());
 
     @Override
     protected Application configure() {
-        return new ResourceConfig(GroupAPI.class, UserAPI.class)
+        return new ResourceConfig(GroupAPI.class, UserAPI.class, NotificationAPI.class)
                 .register(new GroupAPI())
                 .register(TokenValidationFilter.class)
-                .register(new UserAPI());
+                .register(new UserAPI())
+                .register(new NotificationAPI());
     }
 
     @BeforeEach
@@ -58,6 +62,7 @@ public class GroupMemberShipAPITest extends JerseyTest {
 
     @AfterEach
     public void cleanUpDatabase() {
+        deleteNotification();
         deleteGroupMember();
         deleteGroup();
         deleteUser();
@@ -381,4 +386,53 @@ public class GroupMemberShipAPITest extends JerseyTest {
             assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());
         }
     }
+
+    //notification
+    private HashMap<String, Object> getAllNotifications() {
+        TokenResponse tokenResponse = TestTokenGeneratorHelper.getNewTokenAfterLogin("test-user-gm@gmail.com", "2345jigmn6");
+
+        HashMap<String, Object> returnObjects = new HashMap<>();
+        Response response = target(PATH_NOTIFICATION).request(MediaType.APPLICATION_JSON)
+                .header("xToken", tokenResponse.getXToken())
+                .get();
+
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        assertEquals(MediaType.APPLICATION_JSON, response.getMediaType().toString());
+
+        List<Notification> notifications = response.readEntity(new GenericType<>() {});
+        returnObjects.put("response", response);
+        returnObjects.put("notifications", notifications);
+        assertFalse(notifications.isEmpty());
+        return returnObjects;
+    }
+
+    private void deleteNotification() {
+        TokenResponse tokenResponse = TestTokenGeneratorHelper.getNewTokenAfterLogin("test-user-gm@gmail.com", "2345jigmn6");
+        HashMap<String, Object> hashObjects = getAllNotifications();
+        List<Notification> notifications = (List<Notification>) hashObjects.get("notifications");
+
+        Optional<User> user = userService.validateToken(tokenResponse.getXToken());
+        if (user.isEmpty()) {
+            throw new SLServiceException("User not found", 500, "User not found.");
+        }
+
+        // Find the group membership to delete
+        Notification deleteNotification = notifications.stream()
+                .filter(member -> "test-user-groupm".equals(member.getNotificationUserGroup().getGroupName())
+                        && member.getTriggeredBy().getUserId().equals(user.get().getUserId()))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Test user group not found"));
+
+        // Perform the delete request
+        try (Response response = target(PATH_NOTIFICATION + "/id/{id}")
+                .resolveTemplate("id", deleteNotification.getNotificationId())  // Use the correct membership ID
+                .request()
+                .header("xToken", tokenResponse.getXToken())
+                .delete()) {
+
+            // Assert that the response indicates successful deletion
+            assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatus());
+        }
+    }
+
 }

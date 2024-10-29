@@ -6,11 +6,13 @@ import com.team.e.Services.UserService;
 import com.team.e.annotations.TokenRequired;
 import com.team.e.exceptions.SLServiceException;
 import com.team.e.models.GroupMemberShip;
+import com.team.e.models.Notification;
 import com.team.e.models.User;
 import com.team.e.models.UserGroup;
 import com.team.e.repositories.GroupMemberShipRepositoryImpl;
 import com.team.e.repositories.UserGroupRepositoryImpl;
 import com.team.e.repositories.UserRepositoryImpl;
+import com.team.e.utils.NotificationHelper;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -179,7 +181,7 @@ public class GroupAPI {
     @TokenRequired
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addUserGroupMember(GroupMemberShip groupMemberShip) {
+    public Response addUserGroupMember(@HeaderParam("xToken") String xToken, GroupMemberShip groupMemberShip) {
         // Extract groupId and userId from the GroupMemberShip object
         Long groupId = groupMemberShip.getUserGroup().getGroupId();
         Long userId = groupMemberShip.getUser().getUserId();
@@ -201,6 +203,12 @@ public class GroupAPI {
                 groupMemberShip.setUser(user);
                 groupMemberShip.setUserGroup(group);
                 groupMemberShipService.createUserGroupMember(groupMemberShip);
+                //after add new user group add notification
+                User notificationUser = NotificationHelper.getTriggerUser(xToken);
+                NotificationHelper.generateNotification(
+                        new Notification(null, group, notificationUser,
+                                "New member is added to your group :" + group.getGroupName(),
+                                null));
                 return Response.status(Response.Status.CREATED).build();
             }
         }

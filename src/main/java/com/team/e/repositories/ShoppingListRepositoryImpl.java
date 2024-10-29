@@ -177,7 +177,7 @@ public class ShoppingListRepositoryImpl implements ShoppingListRepository {
             LocalDateTime currentDate = LocalDateTime.now();
 
             // Define the desired date format
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
             // Format the LocalDate to String
             String formattedDate = currentDate.format(formatter);

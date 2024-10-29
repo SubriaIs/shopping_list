@@ -33,6 +33,6 @@ public class Notification {
     private String message;
 
     @Column(name = "createdAt", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private String createdAt;
 
 }

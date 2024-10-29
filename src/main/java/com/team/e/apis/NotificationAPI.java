@@ -25,7 +25,6 @@ public class NotificationAPI {
         this.notificationService = new NotificationService(new NotificationRepositoryImpl());
         this.groupMemberShipService = new GroupMemberShipService(new GroupMemberShipRepositoryImpl());
     }
-
     @GET
     @Path("/notification")
     @TokenRequired
@@ -105,4 +104,17 @@ public class NotificationAPI {
         return Response.status(Response.Status.CREATED).build();
 
     }*/
+
+    @DELETE
+    @Path("/notification/id/{id}")
+    @TokenRequired
+    public Response deleteNotification(@PathParam("id") Long id) {
+        Optional<Notification> existingNotification = notificationService.getNotificationById(id);
+        if (existingNotification.isPresent()) {
+            notificationService.removeNotification(id);
+            return Response.noContent().build();
+        } else {
+            throw new SLServiceException("Not found", 404, "Notification id not found: " + id);
+        }
+    }
 }

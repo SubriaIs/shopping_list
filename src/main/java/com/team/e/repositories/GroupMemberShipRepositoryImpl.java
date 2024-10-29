@@ -4,7 +4,9 @@ import com.mysql.cj.xdevapi.Collection;
 import com.team.e.exceptions.SLServiceException;
 import com.team.e.interfaces.GroupMemberShipRepository;
 import com.team.e.models.GroupMemberShip;
+import com.team.e.models.Notification;
 import com.team.e.models.UserGroup;
+import com.team.e.utils.NotificationHelper;
 import jakarta.persistence.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -73,7 +75,7 @@ public class GroupMemberShipRepositoryImpl implements GroupMemberShipRepository 
             em.getTransaction().commit();
         } catch (Exception e) {
             em.getTransaction().rollback(); // Rollback in case of an error
-            logger.warn("Error occurred while deleting product: {}", e.getMessage());
+            logger.warn("Error occurred while deleting groupMemberShip: {}", e.getMessage());
         } finally {
             em.close();
         }
