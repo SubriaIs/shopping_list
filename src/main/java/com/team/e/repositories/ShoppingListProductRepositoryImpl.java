@@ -64,6 +64,15 @@ public class ShoppingListProductRepositoryImpl implements ShoppingListProductRep
         EntityManager em = emf.createEntityManager();
         try {
             em.getTransaction().begin();
+            // Ensure ShoppingList is managed
+            if (shoppingListProduct.getShoppingList() != null && shoppingListProduct.getShoppingList().getShoppingListId() != null) {
+                ShoppingList managedShoppingList = em.find(ShoppingList.class, shoppingListProduct.getShoppingList().getShoppingListId());
+                if (managedShoppingList != null) {
+                    shoppingListProduct.setShoppingList(managedShoppingList);
+                } else {
+                    logger.error("ShoppingList with id " + shoppingListProduct.getShoppingList().getShoppingListId() + " not found.");
+                }
+            }
             // Merge the ShoppingList to ensure it is managed
             if (shoppingListProduct.getShoppingListProductId() == null) {
                 em.persist(shoppingListProduct);

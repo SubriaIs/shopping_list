@@ -64,6 +64,7 @@ public class GroupMemberShipAPITest extends JerseyTest {
     public void cleanUpDatabase() {
         deleteNotification();
         deleteGroupMember();
+        deleteNotification();
         deleteGroup();
         deleteUser();
     }

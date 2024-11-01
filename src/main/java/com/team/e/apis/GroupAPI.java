@@ -207,7 +207,7 @@ public class GroupAPI {
                 User notificationUser = NotificationHelper.getTriggerUser(xToken);
                 NotificationHelper.generateNotification(
                         new Notification(null, group, notificationUser,
-                                "New member is added to your group :" + group.getGroupName(),
+                                "New member "+user.getUserName() +" is added to your group :" + group.getGroupName(),
                                 null));
                 return Response.status(Response.Status.CREATED).build();
             }
@@ -217,10 +217,16 @@ public class GroupAPI {
     @DELETE
     @Path("/group/member/id/{id}")
     @TokenRequired
-    public Response deleteUserGroupMember(@PathParam("id") Long id) {
+    public Response deleteUserGroupMember(@HeaderParam("xToken") String xToken, @PathParam("id") Long id) {
         Optional<GroupMemberShip> existingUserGroupMember = groupMemberShipService.getGroupMemberById(id);
         if (existingUserGroupMember.isPresent()) {
             groupMemberShipService.removeUserGroupMember(id);
+            //after removed user group add notification
+            User notificationUser = NotificationHelper.getTriggerUser(xToken);
+            NotificationHelper.generateNotification(
+                    new Notification(null, existingUserGroupMember.get().getUserGroup(), notificationUser,
+                            "A member "+existingUserGroupMember.get().getUser().getUserName()+" is removed from your group :" + existingUserGroupMember.get().getUserGroup().getGroupName(),
+                            null));
             return Response.noContent().build();
         } else {
             throw new SLServiceException("Not found", 404, "Group Member id not found: " + id);

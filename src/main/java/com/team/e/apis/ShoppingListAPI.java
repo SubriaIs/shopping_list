@@ -5,12 +5,14 @@ import com.team.e.Services.ShoppingListService;
 import com.team.e.Services.UserService;
 import com.team.e.annotations.TokenRequired;
 import com.team.e.exceptions.SLServiceException;
+import com.team.e.models.Notification;
 import com.team.e.models.ShoppingList;
 import com.team.e.models.ShoppingListProduct;
 import com.team.e.models.User;
 import com.team.e.repositories.ShoppingListProductRepositoryImpl;
 import com.team.e.repositories.ShoppingListRepositoryImpl;
 import com.team.e.repositories.UserRepositoryImpl;
+import com.team.e.utils.NotificationHelper;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -167,10 +169,16 @@ public class ShoppingListAPI {
     @TokenRequired
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateShoppingList(@PathParam("id") Long id, ShoppingList shoppingList) {
+    public Response updateShoppingList(@HeaderParam("xToken") String xToken,@PathParam("id") Long id, ShoppingList shoppingList) {
         Optional<ShoppingList> existingShoppingList = shoppingListService.getShoppingListById(id);
         if (existingShoppingList.isPresent()) {
             ShoppingList updatedShoppingList = shoppingListService.UpdateShoppingList(shoppingList, existingShoppingList.get());
+            //After modified shoppingList add notification
+            User notificationUser = NotificationHelper.getTriggerUser(xToken);
+            NotificationHelper.generateNotification(
+                    new Notification(null, existingShoppingList.get().getUserGroup(), notificationUser,
+                            "Shopping List (" + existingShoppingList.get().getShoppingListName()+") information is updated.",
+                            null));
             return Response.ok(updatedShoppingList).build();
         } else {
             throw new SLServiceException("Not found",404,"shopping list not found: "+id);
@@ -235,11 +243,16 @@ public class ShoppingListAPI {
     @TokenRequired
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response addShoppingListProduct(ShoppingListProduct shoppingListProduct) {
+    public Response addShoppingListProduct(@HeaderParam("xToken") String xToken,ShoppingListProduct shoppingListProduct) {
         try {
             // Create the shopping list
             ShoppingListProduct createdShoppingListProduct = shoppingListProductService.createShoppingListProduct(shoppingListProduct);
-
+            //after add new product add notification
+            User notificationUser = NotificationHelper.getTriggerUser(xToken);
+            NotificationHelper.generateNotification(
+                    new Notification(null, createdShoppingListProduct.getShoppingList().getUserGroup(), notificationUser,
+                            "New product "+ createdShoppingListProduct.getProductName() +" is added to your shopping List :" + shoppingListService.getShoppingListById(shoppingListProduct.getShoppingList().getShoppingListId()).get().getShoppingListName(),
+                            null));
             // Return the created shopping list with a 201 status code
             return Response.status(Response.Status.CREATED)
                     .entity(createdShoppingListProduct) // Include the created ShoppingList in the response
@@ -258,10 +271,16 @@ public class ShoppingListAPI {
     @TokenRequired
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateShoppingListProduct(@PathParam("id") Long id, ShoppingListProduct shoppingListProduct) {
+    public Response updateShoppingListProduct(@HeaderParam("xToken") String xToken,@PathParam("id") Long id, ShoppingListProduct shoppingListProduct) {
         Optional<ShoppingListProduct> existingShoppingListProduct = shoppingListProductService.getShoppingListProductById(id);
         if (existingShoppingListProduct.isPresent()) {
             ShoppingListProduct updatedShoppingListProduct = shoppingListProductService.UpdateShoppingListProduct(shoppingListProduct, existingShoppingListProduct.get());
+            //after modified product add notification
+            User notificationUser = NotificationHelper.getTriggerUser(xToken);
+            NotificationHelper.generateNotification(
+                    new Notification(null, updatedShoppingListProduct.getShoppingList().getUserGroup(), notificationUser,
+                             " product "+updatedShoppingListProduct.getProductName()+" information is modified to your shopping List :" + updatedShoppingListProduct.getShoppingList().getShoppingListName(),
+                            null));
             return Response.ok(updatedShoppingListProduct).build();
         } else {
             throw new SLServiceException("Not found",404,"shopping list Product not found: "+id);
@@ -271,10 +290,16 @@ public class ShoppingListAPI {
     @DELETE
     @Path("/shoppingList/product/id/{id}")
     @TokenRequired
-    public Response deleteShoppingListProduct(@PathParam("id") Long id) {
+    public Response deleteShoppingListProduct(@HeaderParam("xToken") String xToken, @PathParam("id") Long id) {
         Optional<ShoppingListProduct> existingShoppingListProduct = shoppingListProductService.getShoppingListProductById(id);
         if (existingShoppingListProduct.isPresent()) {
             shoppingListProductService.removeShoppingListProduct(id);
+            //after delete product add notification
+            User notificationUser = NotificationHelper.getTriggerUser(xToken);
+            NotificationHelper.generateNotification(
+                    new Notification(null, existingShoppingListProduct.get().getShoppingList().getUserGroup(), notificationUser,
+                            " product "+existingShoppingListProduct.get().getProductName()+" is removed from your shopping List :" + existingShoppingListProduct.get().getShoppingList().getShoppingListName(),
+                            null));
             return Response.noContent().build();
         } else {
             throw new SLServiceException("Not found",404,"shopping list Product id not found: "+id);

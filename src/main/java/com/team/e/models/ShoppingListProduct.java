@@ -20,7 +20,7 @@ public class ShoppingListProduct {
     @Column(name = "productName", nullable = false)
     private String productName;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JsonIgnoreProperties({"userGroup", "shoppingListProducts"})
     @JoinColumn(name = "shoppingListId", nullable = false, foreignKey = @ForeignKey(name = "fk_shoppingList_shoppingListProducts"))
     private ShoppingList shoppingList;

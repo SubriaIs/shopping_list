@@ -4,9 +4,12 @@ import com.team.e.Services.ShoppingListService;
 import com.team.e.Services.UserGroupService;
 import com.team.e.Services.UserService;
 import com.team.e.apis.GroupAPI;
+import com.team.e.apis.NotificationAPI;
 import com.team.e.apis.ShoppingListAPI;
 import com.team.e.apis.UserAPI;
+import com.team.e.exceptions.SLServiceException;
 import com.team.e.filters.TokenValidationFilter;
+import com.team.e.models.Notification;
 import com.team.e.models.ShoppingList;
 import com.team.e.models.User;
 import com.team.e.models.UserGroup;
@@ -31,22 +34,26 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ShoppingListAPITest extends JerseyTest {
     private static final String PATH_SHOPPING_LIST = "/v1/shoppingList";
     private static final String PATH_USER = "/v1/user";
+    private static final String PATH_NOTIFICATION = "/v1/notification";
 
-
+    UserService userService = new UserService(new UserRepositoryImpl());
     @Override
     protected Application configure() {
         return new ResourceConfig(GroupAPI.class, ShoppingListAPI.class, User.class)
                 .register(new GroupAPI())
                 .register(TokenValidationFilter.class)
                 .register(new ShoppingListAPI())
-                .register(new UserAPI());
+                .register(new UserAPI())
+                .register(new NotificationAPI());
     }
+
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -55,10 +62,19 @@ public class ShoppingListAPITest extends JerseyTest {
         addShoppingList("test-shopping-list", "test-shopping-list-description");
     }
 
+    // Flag to track if updateShoppingList was executed
+    private boolean updateShoppingListExecuted = false;
+
     @AfterEach
     public void cleanUpDatabase() {
+        // Only delete notifications if updateShoppingList was executed
+        if (updateShoppingListExecuted) {
+            deleteNotification();
+            updateShoppingListExecuted = false; // Reset flag for next test
+        }
         deleteShoppingList();
         deleteUser();
+
     }
 
     @Test
@@ -152,6 +168,9 @@ public class ShoppingListAPITest extends JerseyTest {
             assertEquals(shoppingList.getDescription(), updated.getDescription(), "Shopping List description should match.");
         }
 
+        // Flag that updateShoppingList was executed
+        updateShoppingListExecuted = true;
+
         //revert
         shoppingList.setShoppingListName("test-shopping-list");
         shoppingList.setDescription("new test shopping List discription");
@@ -166,6 +185,8 @@ public class ShoppingListAPITest extends JerseyTest {
             assertEquals(shoppingList.getShoppingListName(), updated.getShoppingListName(), "Shopping List name should match.");
             assertEquals(shoppingList.getDescription(), updated.getDescription(), "Shopping List description should match.");
         }
+
+
     }
 
     // ShoppingList operations
@@ -288,6 +309,47 @@ public class ShoppingListAPITest extends JerseyTest {
         returnObjects.put("users", users);
         assertFalse(users.isEmpty());
         return returnObjects;
+    }
+
+    //notification
+    private HashMap<String, Object> getAllNotifications() {
+        TokenResponse tokenResponse = TestTokenGeneratorHelper.getNewTokenAfterLogin("test-user-gs@gmail.com", "2345jigsn6");
+
+        HashMap<String, Object> returnObjects = new HashMap<>();
+        Response response = target(PATH_NOTIFICATION).request(MediaType.APPLICATION_JSON)
+                .header("xToken", tokenResponse.getXToken())
+                .get();
+
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+        assertEquals(MediaType.APPLICATION_JSON, response.getMediaType().toString());
+
+        List<Notification> notifications = response.readEntity(new GenericType<>() {});
+        returnObjects.put("response", response);
+        returnObjects.put("notifications", notifications);
+        assertFalse(notifications.isEmpty());
+        return returnObjects;
+    }
+
+    private void deleteNotification() {
+        TokenResponse tokenResponse = TestTokenGeneratorHelper.getNewTokenAfterLogin("test-user-gs@gmail.com", "2345jigsn6");
+
+        // Retrieve all notifications
+        HashMap<String, Object> hashObjects = getAllNotifications();
+        List<Notification> notifications = (List<Notification>) hashObjects.get("notifications");
+
+        // Iterate through each notification and delete them one by one
+        for (Notification notification : notifications) {
+            try (Response response = target(PATH_NOTIFICATION + "/id/{id}")
+                    .resolveTemplate("id", notification.getNotificationId())
+                    .request()
+                    .header("xToken", tokenResponse.getXToken())
+                    .delete()) {
+
+                // Assert that the response indicates successful deletion
+                assertEquals(Response.Status.NO_CONTENT.getStatusCode(), response.getStatus(),
+                        "Expected NO_CONTENT (204) status when deleting notification with ID: " + notification.getNotificationId());
+            }
+        }
     }
 
 }

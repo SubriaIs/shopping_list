@@ -2,8 +2,6 @@ package com.team.e.repositories;
 
 import com.team.e.interfaces.NotificationRepository;
 import com.team.e.models.Notification;
-import com.team.e.models.ShoppingListProduct;
-import com.team.e.models.UserGroup;
 import jakarta.persistence.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
