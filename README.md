@@ -1,5 +1,40 @@
 # Shopping list
+# Application Overview
 
+This application supports user, group, shopping list, and notification management, allowing users to collaborate on shared shopping lists with automated notifications for updates.
+
+## Key Features
+
+### User Management
+- **Create Account**: Users can register by providing a username, email, phone number, and password.
+- **Login**: Authenticate using email and password.
+- **Update Password**: Users can change their password post-login.
+
+### User Group Management
+- **Update Group**: Allows updating of group name and description.
+- **Restrictions**:
+  - Groups are automatically created when a new shopping list is created and are removed when the shopping list is deleted.
+  - There are no direct methods for creating or deleting groups.
+
+### Group Membership Management
+- **Add/Remove Member**: Add or remove members from a group.
+- **Automatic Notifications**: Notifications are automatically generated when members are added or removed.
+- **Restrictions**: PATCH operations are not supported for Group Membership.
+
+### Shopping List Management
+- **Create Shopping List**: Creating a shopping list also creates a corresponding group with the list creator as the initial member.
+- **Update Shopping List**: Users can update the shopping list's name and description, which generates a notification.
+- **Delete Shopping List**: Deleting a shopping list removes all related notifications, products, group members, and the group itself.
+- **Add Members**: Additional members can be added to the group via the GroupMembership table.
+
+### Shopping List Product Management
+- **Product Operations**: Products can be added, modified, or deleted within a shopping list.
+- **Automatic Notifications**: Adding, modifying, or deleting a product triggers an automatic notification.
+
+### Notification Management
+- **View Notifications**: Notifications are read-only; they cannot be created, updated, or deleted manually.
+
+---
 ## Getting Started
 
 To get started with the project, follow the steps below:
