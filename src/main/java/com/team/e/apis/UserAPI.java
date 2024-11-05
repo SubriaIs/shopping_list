@@ -53,6 +53,19 @@ public class UserAPI {
     }
 
     @GET
+    @Path("/user/logged")
+    @TokenRequired // This endpoint now requires xToken
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUserByToken(@HeaderParam("xToken") String xToken) {
+        Optional<User> user = userService.validateToken(xToken);
+        if (user.isPresent()) {
+            return Response.ok(user.get()).build();
+        } else {
+            throw new SLServiceException("Not found",404,"User not found with token: "+xToken);
+        }
+    }
+
+    @GET
     @Path("/user/name/{name}")
     @TokenRequired // This endpoint now requires xToken
     @Produces(MediaType.APPLICATION_JSON)
