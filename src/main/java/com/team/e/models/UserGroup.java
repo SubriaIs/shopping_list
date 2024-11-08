@@ -35,14 +35,14 @@ public class UserGroup {
     @JsonIgnoreProperties({"userCreatedUserGroups"})
     private User createdByUser;
 
-    @OneToMany(mappedBy = "userGroup", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "userGroup", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<GroupMemberShip> groupUsers;
 
-    @OneToMany(mappedBy = "notificationUserGroup", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "notificationUserGroup",cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Notification> groupNotifications;
 
     // Add the one-to-one relationship back to ShoppingList
-    @OneToOne(mappedBy = "userGroup", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "userGroup")
     @JsonIgnore
     private ShoppingList shoppingList;
 

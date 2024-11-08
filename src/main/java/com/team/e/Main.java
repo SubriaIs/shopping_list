@@ -3,6 +3,7 @@ package com.team.e;
 import com.team.e.exceptions.GenericExceptionMapper;
 import com.team.e.filters.CORSFilter;
 import com.team.e.filters.TokenValidationFilter;
+import com.team.e.utils.EntityManagerFactoryProvider;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jackson.JacksonFeature;
@@ -29,5 +30,6 @@ public class Main {
         final HttpServer server = GrizzlyHttpServerFactory.createHttpServer(URI.create(BASE_URI), rc);
         server.start();
         System.out.println("Jersey app started with endpoints available at " + BASE_URI);
+        Runtime.getRuntime().addShutdownHook(new Thread(EntityManagerFactoryProvider::closeEntityManagerFactory));
     }
 }

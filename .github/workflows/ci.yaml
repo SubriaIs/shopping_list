@@ -34,12 +34,15 @@ jobs:
           java-version: '18'  # Specify Java 18
           distribution: 'adopt'  # You can also use 'zulu' or 'temurin'
 
-      - name: Make test-runner.sh executable
-        run: chmod +x ./scripts/test-runner.sh  # Ensure the test script in the scripts folder is executable
+#      - name: Make test-runner.sh executable
+#        run: chmod +x ./scripts/test-runner.sh  # Ensure the test script in the scripts folder is executable
+#
+#      - name: Run test-runner.sh
+#        run: |
+#          timeout 60m ./scripts/test-runner.sh  # Run the script with a long timeout of 60 minutes
 
-      - name: Run test-runner.sh
-        run: |
-          timeout 60m ./scripts/test-runner.sh  # Run the script with a long timeout of 60 minutes
+      - name: Test the project
+        run: mvn clean test  # Skip tests during package
 
       - name: Package the project
         run: mvn clean package -DskipTests  # Skip tests during package

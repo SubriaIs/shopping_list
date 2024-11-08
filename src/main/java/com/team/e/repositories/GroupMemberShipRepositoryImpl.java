@@ -1,12 +1,9 @@
 package com.team.e.repositories;
 
-import com.mysql.cj.xdevapi.Collection;
 import com.team.e.exceptions.SLServiceException;
 import com.team.e.interfaces.GroupMemberShipRepository;
 import com.team.e.models.GroupMemberShip;
-import com.team.e.models.Notification;
-import com.team.e.models.UserGroup;
-import com.team.e.utils.NotificationHelper;
+import com.team.e.utils.EntityManagerFactoryProvider;
 import jakarta.persistence.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,36 +14,33 @@ import java.util.List;
 import java.util.Optional;
 
 public class GroupMemberShipRepositoryImpl implements GroupMemberShipRepository {
-    private EntityManagerFactory emf = Persistence.createEntityManagerFactory("shoppingListPU");
+
+    private final EntityManagerFactory emf = EntityManagerFactoryProvider.getEntityManagerFactory();
     protected static final Logger logger = LogManager.getLogger(GroupMemberShipRepositoryImpl.class);
+
     @Override
     public List<GroupMemberShip> findAll() {
-        EntityManager em = emf.createEntityManager();
-        try {
+        // Using try-with-resources to ensure proper closing of EntityManager
+        try (EntityManager em = emf.createEntityManager()) {
             TypedQuery<GroupMemberShip> query = em.createQuery("SELECT s FROM GroupMemberShip s", GroupMemberShip.class);
             return query.getResultList();
-        } finally {
-            em.close();
         }
     }
 
     @Override
     public Optional<GroupMemberShip> findByGroupMemberShipId(Long id) {
-        EntityManager em = emf.createEntityManager();
-        try {
+        try (EntityManager em = emf.createEntityManager()) {
             return Optional.ofNullable(em.find(GroupMemberShip.class, id));
-        } finally {
-            em.close();
         }
     }
 
     @Override
     public void save(GroupMemberShip groupMemberShip) {
-        EntityManager em = emf.createEntityManager();
-        try {
+        // Using try-with-resources to ensure proper closing of EntityManager
+        try (EntityManager em = emf.createEntityManager()) {
             em.getTransaction().begin();
-            if (groupMemberShip.getGroupMemberShipId() == null) {
 
+            if (groupMemberShip.getGroupMemberShipId() == null) {
                 // Use a native SQL query for insertion
                 String sql = "INSERT INTO GroupMemberShip (userId, groupId) VALUES (:userId, :groupId)";
                 Query query = em.createNativeQuery(sql);
@@ -54,92 +48,85 @@ public class GroupMemberShipRepositoryImpl implements GroupMemberShipRepository 
                 query.setParameter("groupId", groupMemberShip.getUserGroup().getGroupId());
                 query.executeUpdate();
             } else {
-                logger.error(groupMemberShip.getGroupMemberShipId() + "Id already exist. ");
+                logger.error("GroupMemberShip with ID {} already exists.", groupMemberShip.getGroupMemberShipId());
             }
+
             em.getTransaction().commit();
-        } finally {
-            em.close();
+        } catch (Exception e) {
+            logger.error("Error occurred while saving GroupMemberShip: {}", e.getMessage());
+            throw new SLServiceException("Error in saving GroupMemberShip.", 500, "Please contact system admin.");
         }
     }
 
     @Override
     public void delete(Long id) {
-        EntityManager em = emf.createEntityManager();
-        try {
+        // Using try-with-resources to ensure proper closing of EntityManager
+        try (EntityManager em = emf.createEntityManager()) {
             em.getTransaction().begin();
 
-            // Use JPQL to delete the product
+            // Use JPQL to delete the group membership
             em.createQuery("DELETE FROM GroupMemberShip p WHERE p.groupMemberShipId = :groupMemberShipId")
                     .setParameter("groupMemberShipId", id)
                     .executeUpdate();
+
             em.getTransaction().commit();
         } catch (Exception e) {
-            em.getTransaction().rollback(); // Rollback in case of an error
-            logger.warn("Error occurred while deleting groupMemberShip: {}", e.getMessage());
-        } finally {
-            em.close();
+            logger.warn("Error occurred while deleting GroupMemberShip: {}", e.getMessage());
+            throw new SLServiceException("Error in deleting GroupMemberShip.", 500, "Please contact system admin.");
         }
     }
 
     @Override
     public List<GroupMemberShip> findByGroupId(Long groupId) {
-        EntityManager em = emf.createEntityManager();
-        List<GroupMemberShip> groupMemberShip;
-        try {
+        try (EntityManager em = emf.createEntityManager()) {
             TypedQuery<GroupMemberShip> query = em.createQuery("SELECT p FROM GroupMemberShip p WHERE p.userGroup.groupId = :groupId", GroupMemberShip.class);
             query.setParameter("groupId", groupId);
+
+            List<GroupMemberShip> groupMemberShip;
             try {
                 groupMemberShip = query.getResultList();
                 return groupMemberShip;
             } catch (NoResultException e) {
                 logger.warn("{} : {}", LocalDateTime.now(), e.getMessage());
-                groupMemberShip = Collections.emptyList();
-                return groupMemberShip;
+                return Collections.emptyList();
             }
-        } finally {
-            em.close();
         }
     }
 
     @Override
     public List<GroupMemberShip> findByUserId(Long userId) {
-        EntityManager em = emf.createEntityManager();
-        List<GroupMemberShip> groupMemberShip;
-        try {
+        try (EntityManager em = emf.createEntityManager()) {
             TypedQuery<GroupMemberShip> query = em.createQuery("SELECT p FROM GroupMemberShip p WHERE p.user.userId = :userId", GroupMemberShip.class);
             query.setParameter("userId", userId);
+
+            List<GroupMemberShip> groupMemberShip;
             try {
                 groupMemberShip = query.getResultList();
                 return groupMemberShip;
             } catch (NoResultException e) {
                 logger.warn("{} : {}", LocalDateTime.now(), e.getMessage());
-                groupMemberShip = Collections.emptyList();
-                return groupMemberShip;
+                return Collections.emptyList();
             }
-        } finally {
-            em.close();
         }
     }
 
+    @Override
     public Optional<GroupMemberShip> findByGroupIdAndUserId(Long groupId, Long userId) {
-        EntityManager em = emf.createEntityManager();
-        try {
-            TypedQuery<GroupMemberShip> query = em.createQuery("SELECT p FROM GroupMemberShip p WHERE p.userGroup.groupId = :groupId AND p.user.userId = :userId", GroupMemberShip.class);
+        try (EntityManager em = emf.createEntityManager()) {
+            TypedQuery<GroupMemberShip> query = em.createQuery(
+                    "SELECT p FROM GroupMemberShip p WHERE p.userGroup.groupId = :groupId AND p.user.userId = :userId",
+                    GroupMemberShip.class);
             query.setParameter("groupId", groupId);
             query.setParameter("userId", userId);
+
             List<GroupMemberShip> results = query.getResultList();
-
-            // Return the first result wrapped in an Optional
             return results.stream().findFirst();
-
-        }catch (NoResultException e) {
-            throw new SLServiceException("Group Member not found",404,"Group Member unable.");
-
-        }catch (Exception e) {
-            throw new SLServiceException("Error happened",500,e.getMessage());
-        }
-        finally {
-            em.close();
+        } catch (NoResultException e) {
+            logger.error("Group Member not found for GroupId: {} and UserId: {}", groupId, userId);
+            throw new SLServiceException("Group Member not found", 404, "Group Member unable.");
+        } catch (Exception e) {
+            logger.error("Error occurred while fetching GroupMemberShip: {}", e.getMessage());
+            throw new SLServiceException("Error occurred", 500, e.getMessage());
         }
     }
 }
