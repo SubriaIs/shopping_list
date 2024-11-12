@@ -15,6 +15,7 @@ import jakarta.ws.rs.core.Response;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Path("/v1")
 public class NotificationAPI {
@@ -25,16 +26,17 @@ public class NotificationAPI {
         this.notificationService = new NotificationService(new NotificationRepositoryImpl());
         this.groupMemberShipService = new GroupMemberShipService(new GroupMemberShipRepositoryImpl());
     }
+
     @GET
     @Path("/notification")
     @TokenRequired
     @Produces(MediaType.APPLICATION_JSON)
     public List<Notification> getNotifications() {
         List<Notification> notifications = notificationService.getAllNotifications();
-        if(notifications .isEmpty()){
-            throw new SLServiceException("Not found",404,"No notifications found in database.");
-        }else{
-            return notifications ;
+        if (notifications.isEmpty()) {
+            throw new SLServiceException("Not found", 404, "No notifications found in database.");
+        } else {
+            return notifications;
         }
     }
 
@@ -47,7 +49,7 @@ public class NotificationAPI {
         if (notification.isPresent()) {
             return Response.ok(notification.get()).build();
         } else {
-            throw new SLServiceException("Not found",404,"notification id not found: "+id);
+            throw new SLServiceException("Not found", 404, "notification id not found: " + id);
         }
     }
 
@@ -57,9 +59,9 @@ public class NotificationAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getNotificationsByGroupId(@PathParam("id") Long id) {
         List<Notification> notifications = notificationService.getNotificationByGroupId(id);
-        if(notifications.isEmpty()){
-            throw new SLServiceException("Not found",404,"No notifications found in database.");
-        }else{
+        if (notifications.isEmpty()) {
+            throw new SLServiceException("Not found", 404, "No notifications found in database.");
+        } else {
             return Response.ok(notifications).build();
         }
     }
@@ -70,9 +72,9 @@ public class NotificationAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getNotificationsByTriggeredBy(@PathParam("id") Long id) {
         List<Notification> notifications = notificationService.getNotificationByTriggeredBy(id);
-        if(notifications.isEmpty()){
-            throw new SLServiceException("Not found",404,"No notifications found in database.");
-        }else{
+        if (notifications.isEmpty()) {
+            throw new SLServiceException("Not found", 404, "No notifications found in database.");
+        } else {
             return Response.ok(notifications).build();
         }
     }
@@ -82,17 +84,33 @@ public class NotificationAPI {
     @TokenRequired
     @Produces(MediaType.APPLICATION_JSON)
     public Response getNotificationsByUserIdBy(@PathParam("id") Long userId) {
-       List<GroupMemberShip> userGroupMemberShips = this.groupMemberShipService.getGroupMemberByUserId(userId);
-       List<Notification> userNotifications = new java.util.ArrayList<>(Collections.emptyList());
+        List<GroupMemberShip> userGroupMemberShips = this.groupMemberShipService.getGroupMemberByUserId(userId);
+        List<Notification> userNotifications = new java.util.ArrayList<>(Collections.emptyList());
 
-       userGroupMemberShips.forEach(ugm ->{
-           List<Notification> findNotifications = notificationService.getNotificationByGroupId(ugm.getUserGroup().getGroupId());
-           if(!findNotifications.isEmpty()){
-               userNotifications.addAll(findNotifications);
-           }
-       } );
+        userGroupMemberShips.forEach(ugm -> {
+            List<Notification> findNotifications = notificationService.getNotificationByGroupId(ugm.getUserGroup().getGroupId());
+            if (!findNotifications.isEmpty()) {
+                userNotifications.addAll(findNotifications);
+            }
+        });
 
-       return Response.ok(userNotifications).build();
+        //self
+        List<Notification> notifications = notificationService.getNotificationByTriggeredBy(userId);
+        if (!notifications.isEmpty()) {
+            userNotifications.addAll(notifications);
+        }
+
+        List<Notification> uniqueNotifications = userNotifications.stream()
+                .collect(Collectors.toMap(
+                        Notification::getNotificationId, // Use notificationId as the key for uniqueness
+                        notification -> notification,    // Keep the notification itself as the value
+                        (existing, replacement) -> existing // If duplicate, keep the existing notification
+                ))
+                .values() // Get only the unique notifications
+                .stream()
+                .toList();
+
+        return Response.ok(uniqueNotifications).build();
     }
 
     /*@POST
