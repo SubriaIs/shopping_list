@@ -13,6 +13,7 @@ services:
       DB_HOST: db  # Use 'db' as the hostname
     networks:
       - app_network
+    restart: always  # Restart policy
 
   db:
     image: subriais/shopping_list_db:1.0.0
@@ -26,6 +27,7 @@ services:
       - db_data:/var/lib/mysql
     networks:
       - app_network
+    restart: always  # Restart policy
 
 volumes:
   db_data:
